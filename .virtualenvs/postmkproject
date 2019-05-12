@@ -1,0 +1,5 @@
+#!/bin/bash
+# This hook is run after a new project is activated.
+[[ -z NEOVIM_PRESENT ]] && python -c 'import neovim' || pip install neovim
+export NEOVIM_PRESENT=1
+

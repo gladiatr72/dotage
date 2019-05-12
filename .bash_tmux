@@ -1,0 +1,18 @@
+# vim: ft=sh
+
+export YELLOW="\033[38;2;255;249;0m"
+export NORMAL="\033[0;30m"
+
+tmuxls() {
+    ([[ ! $( which tmux ) ]] && return 1) || TMUX=$( which tmux )
+
+    TMUX_SOCKS=$( find ~/.sock -maxdepth 1 -type s -name "*.tmux.soc" -user ${USER} )
+
+	if [[ -n TMUX_SOCKS ]];
+	then
+		for el in $TMUX_SOCKS;
+		do
+            ${TMUX} -S $el ls >& /dev/null && echo -en "\n${el}:\n${YELLOW}$( ${TMUX} -S $el ls )${NORMAL}\n"
+		done
+	fi
+}

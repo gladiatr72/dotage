@@ -1,0 +1,10 @@
+#!/bin/bash
+# This hook is sourced after a new virtualenv is activated.
+
+touch $H/.env_
+[[ ! -d $H/.kube ]] && mkdir $H/.kube
+
+
+echo -en '[[ -f $H/.kube/config ]] && export KUBECONFIG=$H/.kube/config || unset KUBECONFIG\n' >> $H/.env_
+
+

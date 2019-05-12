@@ -1,0 +1,88 @@
+NeoBundle "w0rp/ale"
+NeoBundle "elixir-editors/vim-elixir"
+NeoBundle "sebdah/vim-delve"
+NeoBundle 'wincent/command-t', {'build_commands': ['make', 'ruby'], 'build': {'unix': 'cd ruby/command-t/ext/command-t && ruby extconf.rb && make'}}
+NeoBundle 'Shougo/neosnippet.vim'
+NeoBundle 'Shougo/neosnippet-snippets'
+NeoBundle 'tpope/vim-fugitive'
+NeoBundle 'flazz/vim-colorschemes'
+"NeoBundle  "hynek/vim-python-pep8-indent"
+"NeoBundle "davidhalter/jedi-vim"
+NeoBundle "Shougo/deoplete.nvim", {'build': {'unix': 'make'}}
+NeoBundle "zchee/deoplete-go", {'build': {'unix': 'make'}}
+NeoBundle "zchee/deoplete-jedi", {'build': {'unix': 'make'}}
+NeoBundle 'exu/pgsql.vim'
+NeoBundle 'tpope/vim-unimpaired'
+NeoBundle 'lepture/vim-jinja'
+NeoBundle 'xolox/vim-misc'
+ NeoBundle 'xolox/vim-lua-ftplugin'
+NeoBundle 'spacewander/openresty-vim'
+NeoBundle 'wolfgangmehner/lua-support'
+NeoBundle 'editorconfig/editorconfig-vim'
+NeoBundle 'jmcantrell/vim-virtualenv'
+NeoBundle 'vim-scripts/nginx.vim'
+NeoBundle 'vim-scripts/pyunit.vim'
+"NeoBundle 'reinh/vim-makegreen'
+"NeoBundle 'sukima/xmledit'
+NeoBundle 'vim-scripts/node.js'
+NeoBundle 'sjl/gundo.vim'
+NeoBundle 'tshirtman/vim-cython'
+"NeoBundle 'jimenezrick/vimerl'
+NeoBundle 'vim-erlang/vim-erlang-runtime'
+NeoBundle 'vim-erlang/vim-erlang-compiler'
+NeoBundle 'vim-erlang/vim-erlang-omnicomplete'
+NeoBundle 'vim-erlang/vim-erlang-tags'
+
+
+
+"NeoBundle 'mxw/vim-jsx'
+"NeoBundle 'Shougo/unite.vim'
+"NeoBundle 'marijnh/tern_for_vim'
+NeoBundle 'vim-scripts/django.vim'
+NeoBundle 'vim-scripts/vim-htmldjango_omnicomplete'
+"NeoBundle 'vim-ruby/vim-ruby'
+"NeoBundle 'vim-scripts/TinyBufferExplorer'
+NeoBundle 'ekalinin/Dockerfile.vim'
+NeoBundle 'fatih/vim-go'
+NeoBundle 'jodosha/vim-godebug'
+NeoBundle 'vim-airline/vim-airline'
+NeoBundle 'vim-airline/vim-airline-themes'
+NeoBundle 'altercation/vim-colors-solarized'
+NeoBundle 'nathanaelkane/vim-indent-guides'
+"NeoBundle 'Shougo/vimshell'
+NeoBundle 'vim-scripts/restore_view.vim'
+NeoBundle 'saltstack/salt-vim'
+NeoBundle 'mhinz/vim-signify'
+NeoBundle 'hashivim/vim-terraform'
+NeoBundle 'tmhedberg/SimpylFold'
+"NeoBundle 'elixir-lang/vim-elixir'
+NeoBundle 'thinca/vim-ref'
+"NeoBundle 'awetzel/elixir.nvim', { 'do': 'yes \| ./install.sh' }
+"NeoBundle 'euclio/vim-markdown-composer', {'do': function('BuildComposer') }
+
+function! BuildComposer(info)
+  if a:info.status != 'unchanged' || a:info.force
+    if has('nvim')
+      !cargo build --release
+    else
+      !cargo build --release --no-default-features --features json-rpc
+    endif
+  endif
+endfunction
+
+
+
+NeoBundle 'cespare/vim-toml'
+NeoBundle 'majutsushi/tagbar'
+NeoBundle 'bash-support.vim'
+NeoBundle 'bronson/vim-trailing-whitespace'
+
+NeoBundle 'autozimu/LanguageClient-neovim'
+
+NeoBundle 'roxma/nvim-yarp'
+NeoBundle 'ncm2/ncm2'
+NeoBundle 'ncm2/ncm2-tmux'
+NeoBundle 'ncm2/ncm2-path'
+"NeoBundle 'ncm2/ncm2-racer'
+NeoBundle 'racer-rust/vim-racer'
+NeoBundle 'rust-lang/rust.vim'

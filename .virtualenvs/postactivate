@@ -1,0 +1,80 @@
+#!/bin/bash
+# This hook is sourced after every virtualenv is activated.
+
+OLDCURDIR=$PWD
+
+
+[[ "$OLDPS1" != "$PS1" ]] &&
+    OLDPS1=$PS1
+
+PGVER='9.4'
+
+export V="$HOME/.virtualenvs"
+. $V/libvw
+
+if [[ -f $V/last_venv ]];
+then
+    [[ -n "$THAT" ]]  && export THAT=$( cat $V/last_venv ) 
+    if [[ "$THIS" != "$THAT" ]];
+    then
+        if  [[ -f $V/PG/${THAT}/postmaster.pid ]];
+        then
+            #echo "stopping postgres instance: $THAT"
+            #stop_pg $THAT
+            echo -en > /dev/null
+        fi
+        echo -n $THIS > $V/last_venv 
+    else
+        export THAT=$THIS
+    fi
+    export THAT=$THIS
+else
+    echo -n $THIS > $V/last_venv
+fi &&
+
+
+export PGDATA="$V/PG/${THIS}" &&
+export PGHOST="$V/PG/${THIS}" &&
+
+[[ ! -f $H/.nopg ]] &&
+if [[ -d $PGDATA ]];
+then
+    if [[ ! -f $PGDATA/postmaster.pid ]];
+    then
+        echo "starting postgres instance: $THIS"
+        start_pg $THIS
+    else
+        if [[ ! pgrunning ]];
+        then
+            mv $PGDATA/postmaster.pid $PGDATA/postmaster.pid_ 
+            start_pg $THIS
+        fi
+    fi
+else
+    initdb -D $PGDATA >& /dev/null
+    start_pg $THIS
+    sleep 5
+    createuser -ds  revsysuser &&
+    createdb  -O revsysuser django &&
+    createdb  $( whoami )
+fi
+
+#if ! uwsgi_running;
+#then
+#    start_uwsgi
+#fi
+
+[[ -f $V/set_prompt ]] && . $V/set_prompt
+
+[[ ! -d $H ]] && mkdir -p $H
+
+TMTHIS=$THIS
+PYVER=$( python --version 2>&1 |sed -Ee 's/^Python ([[:digit:].]+)\.[[:digit:]]{1,2}$/\1/' )
+
+alias vpy='cd $VIRTUAL_ENV/lib/python${PYVER}/*-packages'
+
+[[ -f $H/.env_ ]] && . $H/.env_ || touch $H/.env_
+
+export PBASE=$H
+export HISTFILE=$H/.bash_history
+

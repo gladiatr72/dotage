@@ -1,0 +1,1 @@
+/home/gladiatr/git/gocode/nvim/ftplugin/go/gocomplete.vim

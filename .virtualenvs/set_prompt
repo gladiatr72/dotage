@@ -1,0 +1,52 @@
+# vim: ft=sh expandtab sw=4 ts=4
+
+. $V/libvw
+
+
+export NORMAL="\033[0;30m"
+export BLUE="\033[38;2;60;124;252m"
+export RED="\033[38;2;196;48;48m"
+export RED="\033[38;2;255;100;27m"
+export YELLOW="\033[38;2;255;249;0m"
+export GREEN="\033[38;2;0;255;65m"
+export MAUVE="\033[38;2;224;176;255m"
+export BRWHITE="\033[0;37m"
+export REDBG=$( echo $MAUVE | sed -e 's/38/48/' )
+
+ps1update(){
+
+    [[ -f $H/.env_ ]] && . $H/.env_ 2> /dev/null
+    [[ -f $PWD/.env_ ]] && . $PWD/.env_ 2> /dev/null
+
+    [[ -f $PWD/.version ]] && . $PWD/.version 2> /dev/null || echo -en ""
+
+    pgrunning && STATUS="${BRWHITE}*${NORMAL}" || STATUS=""
+    terraforming &&
+        [[ -n ${TERRAFORM_WORKSPACE} ]] &&
+        TFSTATUS=" - tfws: ${BRWHITE}${TERRAFORM_WORKSPACE}${NORMAL}" ||
+        TFSTATUS=""
+
+    # sometimes kube cluster data is just noise
+    if [[ ! -f $H/.nokube ]]; then
+        [[ $( which kubectl ) ]] &&
+                export kube_context=$( kubectl config current-context 2> /dev/null ) &&
+                export kube_namespace=$( kubectl config view -o jsonpath="{.contexts[?(@.name==\"${kube_context}\")].context.namespace}") &&
+                [[ "$( echo $kube_context | grep -i prod)"  != '' ]] &&  PRODWARN="${REDBG}" || PRODWARN=
+
+        [[ -n ${kube_context} ]] && STATUS="${STATUS} [[${GREEN}${PRODWARN}${kube_context}${NORMAL}:${YELLOW}${kube_namespace}${NORMAL}]]"
+    fi
+
+    terraforming &&
+        [[ -n ${TERRAFORM_WORKSPACE} ]] &&
+        STATUS="${STATUS} - tfws: ${BRWHITE}${TERRAFORM_WORKSPACE}${NORMAL}"
+
+    OPS1=$( sed -Ene "/^PS1/s/^.*=['\\\"](.*)['\\\"]/\1/p" $HOME/.bashrc )
+    echo -ne "\033]0;${THIS}--${HOSTNAME%%.*}: ${PWD/#$HOME/~}\007"
+
+    PS1="\n(\[\033[4;34m\]${THIS}\[\033[0m\])$STATUS${OPS1}"
+}
+
+pgrunning && STATUS="postgres active" || STATUS=""
+export STATUS
+
+PROMPT_COMMAND=ps1update

@@ -1,0 +1,128 @@
+# vim: ft=sh
+
+function kimages() {
+
+	local add_arg=""
+
+	if [[ -n $1 ]]
+	then
+		if [[ $1 == "all" ]]
+		then
+			add_arg=" --all-namespaces "
+		else
+			add_arg=" --namespace=$1 "
+		fi
+	fi
+
+	eval "kubectl get pod ${add_arg} -o jsonpath='{range .items[*]}{.metadata.name}{\"/\"}{.metadata.labels.app}{.metadata.labels.k8s-app}{\" (namespace=\"}{.metadata.namespace}{\")\"}{\"\n\"}{range .spec.containers[*]}{\"\t\"}{.image}{\"\n\"}{end}{\"\n\"}{end}'"
+
+}
+function kimages2() {
+
+	local add_arg=""
+
+	if [[ -n $1 ]]
+	then
+		if [[ $1 == "all" ]]
+		then
+			add_arg=" --all-namespaces "
+		else
+			add_arg=" -l app=$1 "
+		fi
+	fi
+
+	eval "kubectl get pod ${add_arg} -o jsonpath='{range .items[*]}{.metadata.name}{\"/\"}{.metadata.labels.app}{.metadata.labels.k8s-app}{\" (namespace=\"}{.metadata.namespace}{\")\"}{\"\n\"}{range .spec.containers[*], .spec.initContainers[*]}{\"\t\"}{.name}{\": \"}{.image}{\"\n\"}{end}{end}'"
+
+	# kubectl get pod ${add_arg} -o jsonpath='{range .items[*]}{.metadata.name}{"/"}{.metadata.labels.app}{.metadata.labels.k8s-app}{" (namespace="}{.metadata.namespace}{")"}{"\n"}{range .spec.containers[*], .spec.initContainers[*]}{"\t"}{.name}{": "}{.image}{"\n"}{end}{end}'
+
+}
+
+function swns() {
+	if [[ ( ! -z $kube_context ) && ( ! -z $1 ) ]];then
+		local current_cluster=${kube_context}
+		kubectl config set-context ${current_cluster} --namespace $1 > /dev/null &&\
+		echo "${current_cluster}: default namespace set to ${1}"
+	fi
+}
+
+function swctx() {
+	target_context=${1}
+	if [[ ( ! -z ${target_context} ) ]];then
+		local current_cluster=${kube_context}
+		if [[ ${current_cluster} != ${target_context} ]];
+		then
+			kubectl config use-context $1 > /dev/null &&\
+				echo -en "context set to $( kubectl config current-context )\n\n" &&\
+				# refresh to make sure dynamic (usage, not type)
+				# are refreshed before kvchk is run
+				kube_context=$( kubectl config current-context )
+				. $H/.env_
+				[[ -n $( which kvchk ) ]] && kvchk
+				kubectl completion bash > /etc/bash_completion.d/kubectl
+		else
+			echo -en "\ncurrent context already set to ${target_context}\n\n"
+		fi
+	else
+		echo -en "current context: $( kubectl config current-context )\n\n"
+	fi
+}
+
+function podwatch() {
+[[ -n $1 ]] && watch -n 2 "/bin/bash -c \". ~/.bash_kube-aliases; kubectl get pod --namespace=$1 ; echo; echo; kimages $1\""
+[[ -z $1 ]] && watch -n 2 "/bin/bash -c \". ~/.bash_kube-aliases; kubectl get pod ; echo; kubectl get svc ; echo; echo; kimages \""
+}
+
+function modelmon() {
+	[[ -z $1 ]] && env="-dev" || env="-${1}"
+	[[ "$1" == "prod" ]] && env=""
+
+	pod=$( kubectl get pod --namespace=roe-model${env} -o jsonpath={.items[0].metadata.name} )
+
+	kubectl logs --namespace=roe-model${env} -f ${pod} -f  | sed -nuEe '/\] \{/s/^.*\] \{(.*)/\{\1/p' | jq -C .message | sed -e 's/"//g' | egrep -v 'CallDetails'
+}
+
+function somerandom() {
+	[[ -z $1 ]] && count=32
+
+	< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c${1:-${count}}; echo;
+}
+
+function random() {
+	[[ -n $1 ]] && reqlen=$1 || reqlen=32
+	cat /dev/urandom | tr -dc 'A-Za-z0-1,.!@#$%^&*()-=+-' | head -c ${reqlen}
+}
+
+function knodes() {
+	 kubectl get node| sed -nEe '/^ip/s/ip.([[:digit:]]{1,3})-([[:digit:]]{1,3})-([[:digit:]]{1,3})-([[:digit:]]{1,3}).*/\1.\2.\3.\4/p'
+
+}
+
+function kevents() {
+	while [ /dev/null ]; do kubectl get event --all-namespaces -w | sed -Ee 's/2018.*UTC//' -e 's/[[:blank:]]{5}/  /g' -e 's/, ip[^[:blank:]]+ //' ; done
+}
+
+function env2docker() {
+	[[ -n $H ]] && [[ -f $H/.env_ ]] &&
+	sed -nEe '/[[:alnum:]_]+=/s/^[^A-Z_]+([[:alnum:]_]+)=([[:alnum:]_.${}"\\/]*)[[:blank:]]*\\/-e \1=\2 /p' $H/.env_ | tr '\n' ' '
+
+}
+
+function rund(){
+	docker run -it $( env2docker ) --rm --name=$1 $1
+}
+
+function kresources(){
+
+	_kubectl-v1.12.6 api-resources \
+		--verbs=list \
+		--namespaced \
+		-o name   |\
+	egrep -v 'replicaset|event' |\
+	xargs -n 1 \
+		_kubectl-v1.12.6 get \
+		--show-kind \
+		--ignore-not-found \
+		-ojsonpath='{range .items[*]}{.apiVersion}{"/"}{.kind}{": "}{.metadata.name}{"\n"}{end}{"\n"}'
+
+}
+

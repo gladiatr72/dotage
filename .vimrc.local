@@ -1,0 +1,460 @@
+"
+" Undo some ridiculousness perpetrated in .vimrc (I know... what I get for
+" using a plugin bundle)
+
+let g:mapleader = ','
+let g:maplocalleader = '='
+set shortmess+=c
+
+function! StripTrailingWhitespace()
+	if &modifiable
+		" Preparation: save last search, and cursor position.
+		let _s=@/
+		let l = line('.')
+		let c = col('.')
+		" do the business:
+		%s/\s\+$//e
+		" clean up: restore previous search history, and cursor position
+		let @/=_s
+		call cursor(l, c)
+	endif
+endfunction
+
+
+augroup strip_whitespace
+	autocmd!
+	autocmd FileType c,cpp,java,go,php,javascript,puppet,python,rust,twig,xml,yml,perl,sql,go,vim autocmd BufWritePre <buffer> call StripTrailingWhitespace()
+augroup END
+
+if has('python')
+py << EOF
+import os
+import os.path, sys
+import vim
+
+if 'VIRTUAL_ENV' in os.environ:
+    project_base_dir = os.environ['VIRTUAL_ENV']
+    sys.path.insert(0, project_base_dir)
+    activate_this = os.path.join(project_base_dir, 'bin/activate_this.py')
+    execfile(activate_this, dict(__file__=activate_this))
+    python_version = os.listdir(project_base_dir + '/lib')[0]
+
+    site_packages = os.path.join(project_base_dir, 'lib', python_version, 'site-packages')
+    current_directory = os.getcwd()
+
+    sys.path.insert(1, site_packages)
+    sys.path.insert(1, current_directory)
+
+EOF
+endif
+
+if $TMUX !=# ''
+    set clipboard-=unnamed
+endif
+
+"set ttymouse=xterm2
+" left
+nmap <C-H> <C-W>h
+" right
+nmap <C-L> <C-W>l
+" up
+nmap <C-K> <C-W>k
+" down
+nmap <C-J> <C-W>j
+
+" allows cursor change in tmux mode
+if exists('$TMUX')
+    let &t_SI = "\<Esc>Ptmux;\<Esc>\<Esc>]50;CursorShape=1\x7\<Esc>\\"
+    let &t_EI = "\<Esc>Ptmux;\<Esc>\<Esc>]50;CursorShape=0\x7\<Esc>\\"
+else
+    let &t_SI = "\<Esc>]50;CursorShape=1\x7"
+    let &t_EI = "\<Esc>]50;CursorShape=0\x7"
+endif
+
+
+nnoremap <f2> :set number! number?<cr>
+nnoremap <F3>  :set invpaste paste?<cr>
+
+set encoding=utf-8 " Necessary to show Unicode glyphs
+
+let g:Powerline_symbols = 'fancy'
+
+set guifont=Inconsolata-dz\ for\ Powerline:h18
+
+let g:airline#extensions#tabline#enabled=1
+let g:airline_powerline_fonts = 1
+
+" set laststatus=2 " Always display the statusline in all windows
+set showtabline=1 " Always display the tabline, even if there is only one tab
+set noshowmode " Hide the default mode text (e.g. -- INSERT -- below the statusline)
+
+let g:solarized_termcolors=256
+let g:solarized_termtrans=1
+let g:solarized_contrast='normal'
+let g:airline_theme='solarized'
+let g:airline_theme='wombat'
+let g:solarized_termcolors=256
+
+map <leader>nt <plug>NERDTreeTabsToggle<CR>
+
+set pastetoggle=[24~
+map <leader>tbe :TinyBufferExplorer<CR>
+
+" generic settings
+set encoding=utf8
+set magic
+set lazyredraw
+set wildmenu
+set nobackup
+set autowrite
+set ignorecase
+set smartcase
+set noautowrite
+
+
+if $BG == 'light'
+	set background=light
+else
+	set background=dark
+endif
+
+
+nmap lb :set background=light<cr>
+nmap lbn :set background=dark<cr>
+
+
+set cpoptions=daAbceFs
+let g:easytags_async=1
+let g:easytags_include_members = 1
+let g:easytags_python_enabled=1
+let g:easytags_events = ['BufWritePost','BufReadPost']
+let g:easytags_dynamic_files=0
+let g:easytags_resolve_links=1
+let g:easytags_suppress_report=1
+
+if $H != ''
+	augroup easy_tags_file
+		autocmd!
+		autocmd FileType python set tags=$H/tags
+	augroup END
+	let g:easytags_file=$H . '/.tags'
+endif
+
+let g:pymode = 0
+let g:acp_enableAtStartup = 1
+
+let g:spf13_no_easyWindows = 1
+let g:spf13_clear_search_highdark = 1
+" let g:SimpylFold_docstring_preview = 0
+let g:spf13_clear_search_highdark = 0
+
+let g:jedi#popup_on_dot = 0
+let g:jedi#show_call_signatures = 2
+let g:jedi#popup_select_first = 0
+let g:jedi#smart_auto_mappings=0
+set foldlevelstart=99
+
+let g:airline#extensions#tabline#enabled = 1
+let g:airline#extensions#tabline#formatter = 'unique_tail_improved'
+let g:airline#extensions#bufferline#overwrite_variables = 1
+let g:airline#extensions#tabline#show_tab_nr = 2
+let g:airline#extensions#tabline#buffer_idx_mode = 1
+let g:airline#extensions#tabline#excludes = ['\.pyc']
+
+
+nmap <leader>1 <Plug>AirlineSelectTab1
+nmap <leader>2 <Plug>AirlineSelectTab2
+nmap <leader>3 <Plug>AirlineSelectTab3
+nmap <leader>4 <Plug>AirlineSelectTab4
+nmap <leader>5 <Plug>AirlineSelectTab5
+nmap <leader>6 <Plug>AirlineSelectTab6
+nmap <leader>7 <Plug>AirlineSelectTab7
+nmap <leader>8 <Plug>AirlineSelectTab8
+nmap <leader>9 <Plug>AirlineSelectTab9
+
+
+let g:tern#command=['/usr/local/bin/node', '/usr/local/bin/tern', '--no-port-file']
+
+let g:jsx_ext_required = 0
+
+" let g:syntastic_ignore_files = ['\.py$']
+let g:syntastic_enable_python_checker = 1
+let g:syntastic_python_checkers = ['pylint']
+let g:syntastic_javascript_checkers = ['eslint']
+" let g:syntastic_always_populate_loc_list = 0
+" let g:syntastic_auto_loc_list = 0
+" let g:syntastic_check_on_open = 0
+" let g:syntastic_check_on_wq = 1
+" let g:syntastic_id_checkers = 1
+" let g:syntastic_cursor_column=0
+
+
+
+
+"let g:eastytags_async = 1
+"
+
+" set completeopt = "menuone,longest,preview,noinsert,noselect"
+" set completeopt="menu,preview"
+
+" if has('python3') && !has('python')
+"     autocmd! FileType python
+"     autocmd FileType python autocmd BufWritePre <buffer> call StripTrailingWhitespace()
+" elseif has('python') && !has('python3')
+"     autocmd! FileType python
+"     autocmd FileType python autocmd BufWritePre <buffer> call StripTrailingWhitespace()
+" endif
+
+set mouse=nvir
+set ttyfast
+
+set colorcolumn=80
+
+nmap <F5> :GundoToggle<CR>
+
+set virtualedit=
+set nohlsearch
+set title
+
+set wildignore=*.swp,*.pyc
+
+""
+" riv
+""
+
+let g:riv_global_leader='<F9>'
+
+""
+" vim-lua
+""
+
+let g:lua_complete_globals = 1
+let g:lua_complete_library = 1
+let g:lua_complete_dynamic = 1
+" let g:lua_complete_omni = 1
+
+nnoremap <Leader>y "+y
+nnoremap <Leader>p "+p
+nnoremap <Leader>P "+P
+
+"""
+" make sure neocomplete is not in play
+"""
+
+" let g:neocomplete#enable_at_startup=0
+
+let g:vim_markdown_fenced_languages = ['python', 'bash=sh', 'yaml']
+let g:vim_markdown_conceal = 0
+
+
+let g:jedi#force_py_version = 3
+set omnifunc=jedi#completions
+
+" coerce yaml files to use the (saltstack) formatter
+augroup yaml_to_sls
+	autocmd!
+	autocmd BufNewFile,BufRead *.yaml set filetype=sls
+augroup END
+
+nnoremap <silent> <Plug>(go-test) :<C-u>call go#test#Test(!g:go_jump_to_error, 0)<CR>
+nnoremap <silent> <Plug>(go-test-func) :<C-u>call go#test#Func(!g:go_jump_to_error)<CR>
+nnoremap <silent> <Plug>(go-test-compile) :<C-u>call go#test#Test(!g:go_jump_to_error, 1)<CR>
+
+
+let g:deoplete#sources#go#pointer = 1
+let g:deoplete#enable_at_startup = 1
+
+let g:CommandTFileScanner='watchman'
+nmap <silent> <Leader>ct <Plug>(CommandT)
+
+"color solarized
+
+let g:CommandTMaxFiles=20000
+let g:CommandTGitIncludeUntracked=1
+
+let g:indent_guides_start_level = 2
+let g:indent_guides_guide_size = 1
+let g:indent_guides_enable_on_vim_startup = 1
+
+set listchars=tab:›\ ,trail:•,extends:#,nbsp:. " Highlight problematic whitespace
+
+set cursorline
+
+colorscheme solarized
+set number
+set list
+
+let g:indent_guides_enable_on_vim_startup = 1
+
+let g:go_template_autocreate = 0
+"let g:go_fmt_command = 'goimports'
+let g:go_auto_sameids = 0
+let g:go_highlight_build_constraints = 1
+let g:go_highlight_extra_types = 1
+let g:go_highlight_fields = 1
+let g:go_highlight_functions = 1
+let g:go_highlight_methods = 1
+let g:go_highlight_operators = 1
+let g:go_highlight_structs = 1
+let g:go_highlight_types = 1
+
+
+augroup golang_bits
+	autocmd!
+	autocmd FileType go set noexpandtab
+	autocmd FileType go set shiftwidth=4
+	autocmd FileType go set softtabstop=4
+	autocmd FileType go set tabstop=4
+	autocmd FileType go nmap <F4> <Plug>(go-def)
+	autocmd FileType go nmap <silent> <Leader>gb <Plug>(go-build)
+	autocmd FileType go nmap <silent> <Leader>gr <Plug>(go-run)
+augroup END
+
+" Error and warning signs.
+let g:ale_sign_error = '⤫'
+let g:ale_sign_warning = '⚠'
+"let g:ale_set_loclist = 1
+"let g:ale_set_quicklist = 0
+"let g:ale_python_pylint_executable = 'python3'
+
+" Enable integration with airline.
+let g:airline#extensions#ale#enabled = 1
+
+let g:go_auto_type_info = 0
+let g:go_fold_enable = ['block', 'iport', 'varconst', 'package_comment']
+
+set t_Co=256 " Ignored by nvim
+
+if !has('nvim')
+	set term=xterm-256color
+endif
+
+set viewoptions=cursor,folds,slash,unix
+"
+
+" make the base directory of the current file the CWD
+augroup keep_working_dir
+	autocmd!
+	autocmd BufEnter * if bufname("") !~ "^\[A-Za-z0-9\]*://" | lcd %:p:h | endif
+augroup END
+
+
+"" fugitive
+nnoremap <silent> <leader>gs :Gstatus<CR>
+nnoremap <silent> <leader>gd :Gdiff<CR>
+nnoremap <silent> <leader>gc :Gcommand<CR>
+nnoremap <silent> <leader>gb :Gblame<CR>
+nnoremap <silent> <leader>gl :Glog<CR>
+nnoremap <silent> <leader>gp :Git push<CR>
+nnoremap <silent> <leader>gr :Gread<CR>
+nnoremap <silent> <leader>gw :Gwrite<CR>
+nnoremap <silent> <leader>ge :Gedit<CR>
+nnoremap <silent> <leader>gi :Git add -p %<CR>
+nnoremap <silent> <leader>gg :SignifyToggle<CR>
+
+"" signify
+let g:signify_vcs_list = [ 'git', 'hg' ]
+let g:signify_realtime = 1
+
+"" tamp down highlighters
+highlight clear SignColumn
+highlight clear LineNr
+highlight clear ALEErrorSign
+highlight clear ALWarningSign
+
+
+"" gundo
+nnoremap <silent> <Leader>gu :GundoToggle<CR>
+
+"" vim-go
+
+let g:go_autodetect_gopath = 1
+
+"" tagbar
+
+nnoremap <silent> <leader>tt :TagbarToggle<CR>
+
+"" go to editable command mode by default
+"nnoremap : q:i
+"nnoremap / q/i
+"nnoremap ? q?i
+
+let g:terraform_align=1
+let g:terraform_fold_sections=1
+
+
+let g:bashsupport_syntax_check=1
+
+let $NVIM_TUI_ENABLE_TRUE_COLOR=1
+
+set backspace=indent,eol,start
+set hidden
+set mousemodel=popup
+
+let g:CSApprox_loaded = 1
+
+augroup fuck_tabs
+	autocmd!
+	autocmd Filetype json setlocal ts=4 sw=4 expandtab
+	autocmd Filetype terraform setlocal ts=2 sw=2 expandtab
+augroup END
+
+"set nomore
+nnoremap <leader>rn :set relativenumber!<cr>
+
+
+""""""""""""""
+" Rust bits
+""""""""""""""
+
+augroup rust_bits
+	autocmd!
+	autocmd BufEnter * call ncm2#enable_for_buffer()
+	autocmd FileType rust nmap rd <Plug>(rust-def)
+	autocmd FileType rust nmap rds <Plug>(rust-def-split)
+	autocmd FileType rust nmap rdv <Plug>(rust-def-vertical)
+	autocmd FileType rust nmap rdc <Plug>(rust-doc)
+	autocmd FileType rust let g:rust_fold = 2
+
+
+	"autocmd FileType rust set foldtext=FoldText()
+	"autocmd FileType rust set foldmethod=expr
+	"autocmd FileType rust set foldexpr=getline(v:lnum)=~'^\\s*}$'&&getline(v:lnum+1)=~'^\\s*}$'?'1':'<1'
+	"autocmd FileType rust set fillchars=fold:\
+augroup END
+
+let g:LanguageClient_autoStart = 1
+
+let g:LanguageClient_serverCommands = {
+	\ 'rust': ['~/.cargo/bin/rustup', 'run', 'stable', 'rls'],
+	\ 'python': ['pyls'],
+	\ }
+
+set completeopt=noinsert,menuone,noselect
+
+let g:racer_experimental_completer = 1
+let g:racer_insert_paren = 1
+
+
+" function! FoldText()
+"     let line_i = v:foldstart
+"     let line = ''
+"     while line_i <= v:foldend
+"         let point = strlen(getline(line_i)) - 1
+"         while line[point] == "}"
+"             " let's not loose any } in case they are at the same
+"             " column
+"             let point = point + 1
+"         endwhile
+"         while strlen(line) < point
+"             let line = line . ' '
+"         endwhile
+"         if point == 0
+"             let line =  '}' . line[point+1:]
+"         else
+"             let line = line[0:point - 1] . '}' . line[point+1:]
+"         endif
+"         let line_i = line_i + 1
+"     endwhile
+"   return line
+" endfunction

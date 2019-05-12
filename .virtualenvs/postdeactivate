@@ -1,0 +1,15 @@
+#!/bin/bash
+# This hook is sourced after every virtualenv is deactivated.
+
+
+
+VARS=$( sed -nEe '/[A-Z_]+=/s/^[^A-Z_]+([A-Z_]+)=.*/\1/p' ${H}/.env_ )
+# prune virtualenv bin directory from PATH
+PATH=$( echo $PATH | cut -d"=" -f2 | tr ':' '\n' | egrep -v "^[[:blank:]]+$|${THIS}" | tr '\n' ':' )
+
+unset a activate HSOCK THIS TMTHIS HISTFILE PYVER THAT ORIGINAL_PATH H PBASE PGDATA PGHOST TMSOCK
+unalias vpy
+
+
+[[ -n ${VARS} ]] && unset ${VARS} H
+

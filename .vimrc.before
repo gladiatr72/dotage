@@ -1,0 +1,36 @@
+let g:python_host_prog = $HOME . '/.virtualenvs/neovim-py2/bin/python'
+let g:python3_host_prog = $HOME . '/.virtualenvs/neovim-py3/bin/python3'
+let $PYTHONPATH = $PYTHONPATH . ':' . $VIRTUAL_ENV . '/lib/python3.6/site-packages'
+
+if ! empty($H)
+	let g:vim_file_base = expand($PBASE) . '/.vim'
+else
+	let g:vim_file_base = expand('~')
+endif
+
+if !isdirectory(g:vim_file_base)
+	call mkdir(g:vim_file_base)
+endif
+
+if !isdirectory(g:vim_file_base . '/undo')
+	call mkdir(g:vim_file_base . '/undo')
+endif
+
+exec 'set undofile'
+exec 'set undodir=' . g:vim_file_base . '/undo'
+
+exec 'set directory=' . g:vim_file_base
+
+if !isdirectory(g:vim_file_base . '/backup')
+	call mkdir(g:vim_file_base . '/backup')
+endif
+
+exec 'set backupdir=' . g:vim_file_base . '/backup'
+
+if !isdirectory(g:vim_file_base . '/views')
+	call mkdir(g:vim_file_base . '/views')
+endif
+
+exec 'set viewdir=' . g:vim_file_base . '/views'
+
+
